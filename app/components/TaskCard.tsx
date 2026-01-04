@@ -1,8 +1,15 @@
 import { useSortable } from "@dnd-kit/sortable";
 import { CSS } from "@dnd-kit/utilities";
 import { useState } from "react";
+import { Id, Task } from "../types";
 
-export default function TaskCard(props) {
+interface TaskCardProps {
+  task: Task;
+  deleteTask: (id: Id) => void;
+  updateTask: (id: Id, title: string) => void;
+}
+
+export default function TaskCard(props: TaskCardProps) {
   const { task, deleteTask, updateTask } = props;
   const [mouseOver, setMouseOver] = useState(false);
   const [editMode, setEditMode] = useState(false);

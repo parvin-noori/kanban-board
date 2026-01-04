@@ -1,20 +1,32 @@
 import {
   DndContext,
+  DragEndEvent,
+  DragOverEvent,
   DragOverlay,
+  DragStartEvent,
   PointerSensor,
   useSensor,
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
 import { useMemo, useState } from "react";
+import { createPortal } from "react-dom";
+import { Column, Id, Task } from "../types";
 import ColumnContainer from "./ColumnContainer";
 import TaskCard from "./TaskCard";
 
 export default function KanbanBoard() {
-  const [columns, setColumns] = useState([]);
-  const [tasks, setTasks] = useState([]);
-  const [activeColumn, setActiveColumn] = useState(null);
-  const [activeTask, setActiveTask] = useState(null);
+  const [columns, setColumns] = useState<Column[]>([
+    { id: 1, title: "col11" },
+    { id: 2, title: "col13" },
+    { id: 3, title: "col12" },
+  ]);
+  const [tasks, setTasks] = useState<Task[]>([
+    { id: "task11", columnId: 1, title: `task 11` },
+    { id: "task12", columnId: 3, title: `task 12` },
+  ]);
+  const [activeColumn, setActiveColumn] = useState<Column | null>(null);
+  const [activeTask, setActiveTask] = useState<Task | null>(null);
   const columnsId = useMemo(() => columns.map((col) => col.id), [columns]);
 
   function generateId() {
@@ -22,7 +34,7 @@ export default function KanbanBoard() {
   }
 
   const createNewColumn = () => {
-    const columnToAdd = {
+    const columnToAdd: Column = {
       id: generateId(),
       title: `column ${columns.length + 1}`,
     };
@@ -30,15 +42,15 @@ export default function KanbanBoard() {
     setColumns([...columns, columnToAdd]);
   };
 
-  const deleteColumn = (id) => {
+  const deleteColumn = (id: Id) => {
     const filterColumns = columns.filter((col) => col.id !== id);
     setColumns(filterColumns);
 
-    const newTasks=tasks.filter(task=>task.columnId !==id)
-    setTasks(newTasks)
+    const newTasks = tasks.filter((task) => task.columnId !== id);
+    setTasks(newTasks);
   };
 
-  const updateColumn = (id, title) => {
+  const updateColumn = (id: Id, title: string) => {
     const newColumn = columns.map((col) => {
       if (col.id !== id) return col;
       return { ...col, title };
@@ -46,7 +58,7 @@ export default function KanbanBoard() {
     setColumns(newColumn);
   };
 
-  const createTask = (columnId) => {
+  const createTask = (columnId: Id) => {
     const newTask = {
       id: generateId(),
       columnId,
@@ -56,25 +68,25 @@ export default function KanbanBoard() {
     setTasks([...tasks, newTask]);
   };
 
-  const updateTask = (id, title) => {
+  const updateTask = (id: Id, title: string) => {
     const newTasks = tasks.map((task) => {
       if (task.id !== id) return task;
       return { ...task, title };
     });
     setTasks(newTasks);
   };
-  const onDragStart = (event) => {
-    if (event.active.data.current.type === "Column") {
+  const onDragStart = (event: DragStartEvent) => {
+    if (event.active.data.current?.type === "Column") {
       setActiveColumn(event.active.data.current.column);
       return;
     }
-    if (event.active.data.current.type === "Task") {
+    if (event.active.data.current?.type === "Task") {
       setActiveTask(event.active.data.current.task);
       return;
     }
   };
 
-  const onDragEnd = (event) => {
+  const onDragEnd = (event: DragEndEvent) => {
     setActiveColumn(null);
     setActiveTask(null);
 
@@ -95,7 +107,7 @@ export default function KanbanBoard() {
     });
   };
 
-  const onDragOver = (event) => {
+  const onDragOver = (event: DragOverEvent) => {
     const { active, over } = event;
 
     if (!over) return;
@@ -108,7 +120,7 @@ export default function KanbanBoard() {
     const isActiveATask = active.data.current?.type === "Task";
     const isOverATask = over.data.current?.type === "Task";
 
-    if(!isActiveATask) return
+    if (!isActiveATask) return;
 
     // I'm dropping a task over another task
     if (isActiveATask && isOverATask) {
@@ -122,13 +134,12 @@ export default function KanbanBoard() {
       });
     }
 
-    const isOverAColumn=over.data.current?.type==="Column"
+    const isOverAColumn = over.data.current?.type === "Column";
 
     // I'm dropping a task over a column
-    console.log(tasks)
 
-    if(isActiveATask && isOverAColumn ){
-       setTasks((tasks) => {
+    if (isActiveATask && isOverAColumn) {
+      setTasks((tasks) => {
         const activeIndex = tasks.findIndex((t) => t.id === activeId);
         const overIndex = tasks.findIndex((t) => t.id === overId);
 
@@ -137,9 +148,10 @@ export default function KanbanBoard() {
         return arrayMove(tasks, activeIndex, activeIndex);
       });
     }
+    //  localStorage.setItem("tasks",tasks)
   };
 
-  const deleteTask = (id) => {
+  const deleteTask = (id: Id) => {
     const newTasks = tasks.filter((task) => task.id !== id);
 
     setTasks(newTasks);
@@ -148,6 +160,7 @@ export default function KanbanBoard() {
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 3 } })
   );
+
   return (
     <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-10">
       <DndContext
@@ -180,29 +193,31 @@ export default function KanbanBoard() {
             add column
           </button>
         </div>
-        {/* {createPortal( */}
-        <DragOverlay>
-          {activeColumn && (
-            <ColumnContainer
-              column={activeColumn}
-              deleteColumn={deleteColumn}
-              updateColumn={updateColumn}
-              createTask={createTask}
-              tasks={tasks.filter((task) => task.columnId === activeColumn.id)}
-              deleteTask={deleteTask}
-              updateTask={updateTask}
-            />
-          )}
-          {activeTask && (
-            <TaskCard
-              task={activeTask}
-              deleteTask={deleteTask}
-              updateTask={updateTask}
-            />
-          )}
-        </DragOverlay>
-        {/* document.body
-        )} */}
+        {createPortal(
+          <DragOverlay>
+            {activeColumn && (
+              <ColumnContainer
+                column={activeColumn}
+                deleteColumn={deleteColumn}
+                updateColumn={updateColumn}
+                createTask={createTask}
+                tasks={tasks.filter(
+                  (task) => task.columnId === activeColumn.id
+                )}
+                deleteTask={deleteTask}
+                updateTask={updateTask}
+              />
+            )}
+            {activeTask && (
+              <TaskCard
+                task={activeTask}
+                deleteTask={deleteTask}
+                updateTask={updateTask}
+              />
+            )}
+          </DragOverlay>,
+          document.body
+        )}
       </DndContext>
     </div>
   );
