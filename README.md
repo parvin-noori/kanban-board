@@ -29,13 +29,11 @@ This is a **learning-focused project**, not a production-ready application.
 ## 🚀 Live Demo
 
 🔗 **Vercel Demo:**  
-https://your-vercel-demo-link.vercel.app
+https://kanban-board-bay-eight.vercel.app/
 
 ---
 
 ## 🖼️ Screenshots
-
-![](./screenshots/kanban-1.png)
 ![Kanban Board Preview](https://github.com/parvin-noori/kanban-board/blob/main/public/images/demo.png)
 
 
