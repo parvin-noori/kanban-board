@@ -9,17 +9,18 @@ import {
   useSensors,
 } from "@dnd-kit/core";
 import { arrayMove, SortableContext } from "@dnd-kit/sortable";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { createPortal } from "react-dom";
 import { Column, Id, Task } from "../types";
 import ColumnContainer from "./ColumnContainer";
 import TaskCard from "./TaskCard";
 
 export default function KanbanBoard() {
+  const [mounted, setMounted] = useState(false);
   const [columns, setColumns] = useState<Column[]>([
-    { id: 1, title: "col11" },
-    { id: 2, title: "col13" },
-    { id: 3, title: "col12" },
+    { id: 1, title: "col 1" },
+    { id: 2, title: "col 2" },
+    { id: 3, title: "col 3" },
   ]);
   const [tasks, setTasks] = useState<Task[]>([
     { id: "task11", columnId: 1, title: `task 11` },
@@ -32,6 +33,10 @@ export default function KanbanBoard() {
   function generateId() {
     return Math.floor(Math.random() * 10001);
   }
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const createNewColumn = () => {
     const columnToAdd: Column = {
@@ -162,14 +167,14 @@ export default function KanbanBoard() {
   );
 
   return (
-    <div className="m-auto flex min-h-screen w-full items-center overflow-x-auto overflow-y-hidden px-10">
+    <div className="md:m-auto flex min-h-screen w-full md:py-0 py-5 lg:items-center overflow-x-auto overflow-y-hidden lg:px-10 px-5">
       <DndContext
         onDragStart={onDragStart}
         onDragOver={onDragOver}
         onDragEnd={onDragEnd}
         sensors={sensors}
       >
-        <div className="m-auto flex gap-4">
+        <div className="md:m-auto flex gap-4">
           <div className="flex gap-4">
             <SortableContext items={columnsId}>
               {columns.map((col) => (
@@ -193,31 +198,32 @@ export default function KanbanBoard() {
             add column
           </button>
         </div>
-        {createPortal(
-          <DragOverlay>
-            {activeColumn && (
-              <ColumnContainer
-                column={activeColumn}
-                deleteColumn={deleteColumn}
-                updateColumn={updateColumn}
-                createTask={createTask}
-                tasks={tasks.filter(
-                  (task) => task.columnId === activeColumn.id
-                )}
-                deleteTask={deleteTask}
-                updateTask={updateTask}
-              />
-            )}
-            {activeTask && (
-              <TaskCard
-                task={activeTask}
-                deleteTask={deleteTask}
-                updateTask={updateTask}
-              />
-            )}
-          </DragOverlay>,
-          document.body
-        )}
+        {mounted &&
+          createPortal(
+            <DragOverlay>
+              {activeColumn && (
+                <ColumnContainer
+                  column={activeColumn}
+                  deleteColumn={deleteColumn}
+                  updateColumn={updateColumn}
+                  createTask={createTask}
+                  tasks={tasks.filter(
+                    (task) => task.columnId === activeColumn.id
+                  )}
+                  deleteTask={deleteTask}
+                  updateTask={updateTask}
+                />
+              )}
+              {activeTask && (
+                <TaskCard
+                  task={activeTask}
+                  deleteTask={deleteTask}
+                  updateTask={updateTask}
+                />
+              )}
+            </DragOverlay>,
+            document.body
+          )}
       </DndContext>
     </div>
   );

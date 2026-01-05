@@ -55,7 +55,7 @@ export default function ColumnContainer(props: Props) {
       <div
         ref={setNodeRef}
         style={style}
-        className="bg-gray-900 opacity-60 border-2 border-rose-500 w-87.5 h-125 max-h-125 rounded-md flex flex-col"
+        className="bg-gray-900 opacity-60 border-2 border-rose-500 lg:w-87.5 w-72 h-125 max-h-125 rounded-md flex flex-col"
       ></div>
     );
   }
@@ -64,7 +64,7 @@ export default function ColumnContainer(props: Props) {
     <div
       ref={setNodeRef}
       style={style}
-      className="bg-gray-900 w-87.5 h-125 max-h-125 rounded-md flex flex-col"
+      className="bg-gray-900 lg:w-87.5 w-72 h-125 max-h-125 rounded-md flex flex-col"
     >
       {/* column title  */}
       <div
@@ -75,7 +75,7 @@ export default function ColumnContainer(props: Props) {
       >
         <div className="flex gap-2">
           <div className="flex justify-center items-center bg-gray-900 px-2 py-1 text-sm rounded-full">
-            0
+            {tasks.filter(task=>task.columnId===column.id).length}
           </div>
           {editMode ? (
             <input
